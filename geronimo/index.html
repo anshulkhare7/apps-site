@@ -1,0 +1,2690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Geronimo Stilton Progressive Quiz Adventure</title>
+    <style>
+        :root {
+            --bg-color: #f0f8ff;
+            --text-color: #333;
+            --header-bg: #4ca64c;
+            --header-text: white;
+            --container-bg: white;
+            --question-bg: #f9f9f9;
+            --highlight-color: #4ca64c;
+            --instructions-bg: #fff9e6;
+            --instructions-border: #ffc107;
+            --instructions-title: #d39e00;
+            --timer-bg: #ff6b6b;
+            --correct-color: #4ca64c;
+            --incorrect-color: #d9534f;
+            --unattempted-color: #6c757d;
+            --shadow-color: rgba(0,0,0,0.1);
+            --toggle-bg: #f0f0f0;
+            --toggle-dot: #4ca64c;
+            --locked-bg: #f2f2f2;
+            --locked-text: #aaa;
+            --unlocked-bg: #e6f7e6;
+            --unlocked-text: #4ca64c;
+            --book-border: #ddd;
+            --level-indicator: #ffd700;
+            --cheatcode-bg: #e6f7ff;
+            --cheatcode-border: #007bff;
+        }
+        
+        .dark-mode {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --header-bg: #2a762a;
+            --header-text: #f0f0f0;
+            --container-bg: #1e1e1e;
+            --question-bg: #2d2d2d;
+            --highlight-color: #4ca64c;
+            --instructions-bg: #2d2d2d;
+            --instructions-border: #ffc107;
+            --instructions-title: #ffc107;
+            --timer-bg: #c43c3c;
+            --correct-color: #5cb85c;
+            --incorrect-color: #ff6b6b;
+            --unattempted-color: #adb5bd;
+            --shadow-color: rgba(0,0,0,0.3);
+            --toggle-bg: #555;
+            --toggle-dot: #f0f0f0;
+            --locked-bg: #2a2a2a;
+            --locked-text: #777;
+            --unlocked-bg: #2a3d2a;
+            --unlocked-text: #5cb85c;
+            --book-border: #444;
+            --level-indicator: #d4af37;
+            --cheatcode-bg: #1a3a4a;
+            --cheatcode-border: #0056b3;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            transition: background-color 0.3s, color 0.3s;
+            box-sizing: border-box;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        header {
+            text-align: center;
+            background-color: var(--header-bg);
+            color: var(--header-text);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .timer-container {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background-color: var(--timer-bg);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            box-shadow: 0 3px 5px var(--shadow-color);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 100px;
+            transition: background-color 0.3s;
+        }
+        
+        .timer-icon {
+            margin-right: 8px;
+        }
+        
+        .timer-expired {
+            animation: pulse 1s infinite;
+            background-color: #d9534f;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .instructions {
+            background-color: var(--instructions-bg);
+            border-left: 5px solid var(--instructions-border);
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .instructions h2 {
+            color: var(--instructions-title);
+            margin-top: 0;
+            font-size: 1.3em;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .btn {
+            background-color: var(--highlight-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px auto;
+            display: block;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #3d8b3d;
+            transform: scale(1.05);
+        }
+        
+        .btn:disabled {
+            background-color: #999;
+            cursor: pointer;
+            transform: none;
+        }
+        
+        .locked-level-btn {
+            background-color: #6c757d;
+        }
+        
+        .locked-level-btn:hover {
+            background-color: #5a6268;
+        }
+        
+        .home-btn {
+            background-color: #007bff;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            z-index: 1000;
+            font-size: 1em;
+        }
+        
+        .home-btn:hover {
+            background-color: #0056b3;
+        }
+        
+        .quiz-container {
+            background: var(--container-bg);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px var(--shadow-color);
+            transition: background-color 0.3s;
+            display: none;
+        }
+        
+        .question {
+            margin-bottom: 25px;
+            padding: 15px;
+            border-left: 5px solid var(--highlight-color);
+            background-color: var(--question-bg);
+            transition: background-color 0.3s;
+        }
+        
+        .options {
+            margin-left: 20px;
+        }
+        
+        .option {
+            margin: 8px 0;
+            padding: 5px;
+        }
+        
+        .option label {
+            cursor: pointer;
+            padding-left: 5px;
+        }
+        
+        button {
+            background-color: var(--highlight-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px 0;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #3d8b3d;
+        }
+        
+        .results {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .score {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .correct {
+            color: var(--correct-color);
+            font-weight: bold;
+        }
+        
+        .incorrect {
+            color: var(--incorrect-color);
+            font-weight: bold;
+        }
+        
+        .unattempted {
+            color: var(--unattempted-color);
+            font-weight: bold;
+        }
+        
+        .explanation {
+            margin-top: 5px;
+            font-style: italic;
+            color: #666;
+        }
+        
+        .mouse-icon {
+            font-size: 1.5em;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+        
+        .reset-btn {
+            background-color: #f0ad4e;
+            margin-top: 20px;
+        }
+        
+        .reset-btn:hover {
+            background-color: #ec971f;
+        }
+        
+        .next-level-btn {
+            background-color: #5bc0de;
+            margin-top: 10px;
+        }
+        
+        .next-level-btn:hover {
+            background-color: #46b8da;
+        }
+        
+        .feedback {
+            display: none;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        
+        .feedback.correct {
+            background-color: rgba(76, 166, 76, 0.1);
+        }
+        
+        .feedback.incorrect {
+            background-color: rgba(217, 83, 79, 0.1);
+        }
+        
+        .feedback.unattempted {
+            background-color: rgba(108, 117, 125, 0.1);
+        }
+        
+        /* Dark Mode Toggle Switch */
+        .theme-switch-wrapper {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .theme-switch {
+            display: inline-block;
+            height: 26px;
+            position: relative;
+            width: 50px;
+        }
+        
+        .theme-switch input {
+            display: none;
+        }
+        
+        .slider {
+            background-color: var(--toggle-bg);
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            background-color: var(--toggle-dot);
+            bottom: 3px;
+            content: "";
+            height: 20px;
+            left: 4px;
+            position: absolute;
+            transition: .4s;
+            width: 20px;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+        
+        /* Mobile Responsiveness */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 10px;
+                font-size: 0.95em;
+            }
+            
+            header {
+                padding: 15px;
+            }
+            
+            header h1 {
+                font-size: 1.5em;
+            }
+            
+            .theme-switch-wrapper {
+                top: 10px;
+                left: 10px;
+            }
+            
+            .timer-container {
+                top: 10px;
+                right: 10px;
+                font-size: 1em;
+                min-width: 80px;
+                padding: 5px 10px;
+            }
+            
+            .home-btn {
+                bottom: 10px;
+                right: 10px;
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+            
+            .instructions {
+                padding: 10px;
+                margin-bottom: 20px;
+            }
+            
+            .instructions h2 {
+                font-size: 1.2em;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 1.1em;
+                margin: 15px auto;
+            }
+            
+            .quiz-container {
+                padding: 15px;
+            }
+            
+            .question {
+                padding: 10px;
+                margin-bottom: 20px;
+            }
+            
+            .question h3 {
+                font-size: 1.1em;
+            }
+            
+            .options {
+                margin-left: 10px;
+            }
+            
+            /* Book cards for mobile */
+            .book-card {
+                flex-direction: column;
+            }
+            
+            .book-image {
+                width: 100%;
+                height: 100px;
+            }
+            
+            .book-details {
+                padding: 10px;
+            }
+            
+            .book-title {
+                font-size: 1.2em;
+                margin-bottom: 5px;
+                margin-top: 5px;
+            }
+            
+            .book-description {
+                font-size: 0.9em;
+                margin-bottom: 10px;
+            }
+            
+            .level-indicator {
+                top: 5px;
+                left: 5px;
+                width: 22px;
+                height: 22px;
+                font-size: 0.8em;
+            }
+            
+            .book-status {
+                top: 5px;
+                right: 5px;
+                font-size: 0.7em;
+                padding: 3px 8px;
+            }
+            
+            .score {
+                font-size: 1.3em;
+            }
+            
+            /* Modal for cheatcode */
+            .modal-content {
+                width: 90% !important;
+                max-width: 320px !important;
+                padding: 15px !important;
+            }
+            
+            .modal-content input {
+                width: 100% !important;
+                margin-bottom: 10px !important;
+                box-sizing: border-box !important;
+            }
+            
+            .modal-content button {
+                font-size: 0.9em !important;
+                padding: 8px 15px !important;
+                margin: 5px !important;
+            }
+        }
+        
+        /* Book Selection Component */
+        .book-selection-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .book-card {
+            display: flex;
+            border: 1px solid var(--book-border);
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: var(--container-bg);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+        
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px var(--shadow-color);
+        }
+        
+        .book-image {
+            width: 120px;
+            height: 160px;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            color: #999;
+        }
+        
+        .book-details {
+            padding: 15px;
+            flex: 1;
+        }
+        
+        .book-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .book-description {
+            font-size: 0.9em;
+            color: var(--text-color);
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+        
+        .book-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .status-locked {
+            background-color: var(--locked-bg);
+            color: var(--locked-text);
+        }
+        
+        .status-unlocked {
+            background-color: var(--unlocked-bg);
+            color: var(--unlocked-text);
+        }
+        
+        .level-indicator {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--level-indicator);
+            color: #333;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        /* Cheatcode Input Component */
+        .cheatcode-container {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: var(--cheatcode-bg);
+            border: 1px dashed var(--cheatcode-border);
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .cheatcode-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .cheatcode-input {
+            padding: 8px 15px;
+            border: 1px solid var(--book-border);
+            border-radius: 5px;
+            margin-right: 10px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--container-bg);
+            color: var(--text-color);
+        }
+        
+        .cheatcode-btn {
+            background-color: var(--cheatcode-border);
+            padding: 8px 15px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            color: white;
+            font-size: 1em;
+        }
+        
+        .cheatcode-btn:hover {
+            background-color: #0062cc;
+        }
+        
+        .cheatcode-reveal {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            animation: fadeIn 1s;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .dark-mode .cheatcode-reveal {
+            background-color: #2f1517;
+            border-color: #462124;
+            color: #f8d7da;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Home Page Components */
+        .home-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .welcome-message {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .welcome-message h2 {
+            font-size: 1.8em;
+            color: var(--highlight-color);
+            margin-bottom: 10px;
+        }
+        
+        .progress-summary {
+            background-color: var(--container-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px var(--shadow-color);
+            margin-bottom: 20px;
+        }
+        
+        .progress-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--highlight-color);
+        }
+        
+        .progress-bar-container {
+            height: 20px;
+            background-color: var(--question-bg);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--highlight-color);
+            border-radius: 10px;
+            transition: width 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider"></div>
+        </label>
+        <div class="theme-icon">🌓</div>
+    </div>
+    
+    <div class="timer-container" id="timer-container" style="display: none;">
+        <span class="timer-icon">⏱️</span>
+        <span id="timer">05:00</span>
+    </div>
+    
+    <button id="home-btn" class="btn home-btn" style="display: none;">Home</button>
+    
+    <header>
+        <div class="mouse-icon">🐭</div>
+        <h1>Geronimo Stilton Quiz Adventure</h1>
+        <p id="header-subtitle">Test your knowledge across the book series!</p>
+    </header>
+    
+    <!-- Home Page -->
+    <div id="home-page" class="home-container">
+        <div class="welcome-message">
+            <h2>Welcome to the Geronimo Stilton Quiz Adventure!</h2>
+            <p>Test your knowledge of the Geronimo Stilton book series! Complete each quiz with a perfect score to unlock the next one!</p>
+        </div>
+        
+        <div class="progress-summary">
+            <div class="progress-title">Your Quiz Progress</div>
+            <div class="progress-bar-container">
+                <div id="progress-bar" class="progress-bar" style="width: 0%;"></div>
+            </div>
+            <div id="progress-text">0/2 books completed</div>
+        </div>
+        
+        <div class="book-selection-container" id="book-selection">
+            <!-- Book cards will be inserted here dynamically -->
+        </div>
+    </div>
+    
+    <!-- Quiz Instructions -->
+    <div id="quiz-instructions" class="instructions" style="display: none;">
+        <h2 id="instructions-title">📝 Quiz Instructions</h2>
+        <div id="instructions-book-title" style="font-weight: bold; font-size: 1.2em; margin-bottom: 10px;"></div>
+        <ul>
+            <li><strong>Multiple Choice:</strong> Each question may have one or more correct answers. Choose carefully!</li>
+            <li><strong>Required Completion:</strong> You must attempt all questions before submitting.</li>
+            <li><strong>Scoring System:</strong> +1 point for each completely correct question, -0.5 points for each incorrect question.</li>
+            <li><strong>Unattempted Questions:</strong> -0.25 points for each unattempted question (applies only if time runs out).</li>
+            <li><strong>Time Limit:</strong> You have 5 minutes to complete the quiz. When time expires, your quiz will auto-submit.</li>
+            <li><strong>Score Range:</strong> Your score can be negative if you have many incorrect answers!</li>
+            <li><strong>Accuracy Required:</strong> For questions with multiple answers, you must select ALL correct options and NO incorrect options to earn the point.</li>
+            <li><strong>Perfect Score Needed:</strong> To unlock the next quiz, you need a perfect score (all questions correct)!</li>
+            <li><strong>Have Fun:</strong> Good luck and enjoy your Stilton adventure!</li>
+        </ul>
+        
+        <button id="start-btn" class="btn">Start Quiz</button>
+    </div>
+
+    <!-- Quiz Container -->
+    <div id="quiz-container" class="quiz-container">
+        <div id="questions">
+            <!-- Questions will be dynamically inserted here -->
+        </div>
+
+        <button id="submit-btn" style="display: none;">Submit Answers</button>
+        
+        <div id="results" class="results">
+            <div class="score" id="score-display"></div>
+            <p id="feedback-message"></p>
+            <div id="cheatcode-reveal" class="cheatcode-reveal" style="display: none;"></div>
+            <button id="next-level-btn" class="btn next-level-btn" style="display: none;">Next Book</button>
+            <button id="reset-btn" class="btn reset-btn">Try Again</button>
+        </div>
+    </div>
+
+    <script>
+        const booksQuizData = [
+            {
+                id: 1,
+                title: "Lost Treasure of the Emerald Eye",
+                description: "The first adventure where Geronimo and friends search for a hidden treasure on a faraway island.",
+                cheatcode: "EMERALDEYE",
+                quizData: [
+                    {
+                        question: "Who finds the treasure map that leads to the Emerald Eye?",
+                        options: [
+                            "Geronimo Stilton",
+                            "Thea Stilton",
+                            "Trap Stilton",
+                            "Benjamin Stilton"
+                        ],
+                        correctAnswers: [1],
+                        explanation: "Thea finds the mysterious map in a book at an antiquarian bookshop."
+                    },
+                    {
+                        question: "What is Geronimo Stilton's profession?",
+                        options: [
+                            "Detective",
+                            "Newspaper editor",
+                            "Explorer",
+                            "Chef"
+                        ],
+                        correctAnswers: [1],
+                        explanation: "Geronimo is the editor of 'The Rodent's Gazette,' the most famous newspaper on Mouse Island."
+                    },
+                    {
+                        question: "What newspaper does Geronimo run?",
+                        options: [
+                            "The Daily Whisker",
+                            "The Rodent's Gazette",
+                            "The Mouse Times",
+                            "The Cheese Chronicle"
+                        ],
+                        correctAnswers: [1],
+                        explanation: "Geronimo is the editor-in-chief of 'The Rodent's Gazette.'"
+                    },
+                    {
+                        question: "How does Geronimo feel about adventures?",
+                        options: [
+                            "He loves them and seeks them out",
+                            "He's nervous about them but enjoys them in the end",
+                            "He avoids them at all costs",
+                            "He only enjoys adventures in his dreams"
+                        ],
+                        correctAnswers: [2],
+                        explanation: "Geronimo prefers a quiet life and tries to avoid adventures, though he often gets dragged into them."
+                    },
+                    {
+                        question: "What is the name of the island where the treasure is hidden?",
+                        options: [
+                            "Emerald Island",
+                            "Cat's Eye Island",
+                            "Treasure Island",
+                            "Pearl Island"
+                        ],
+                        correctAnswers: [1],
+                        explanation: "The treasure is hidden on Cat's Eye Island, which gets its name from its shape."
+                    },
+                    {
+                        question: "What does the 'Emerald Eye' actually turn out to be?",
+                        options: [
+                            "A precious jewel",
+                            "A secret cave",
+                            "A giant pearl",
+                            "A statue of an eye"
+                        ],
+                        correctAnswers: [2],
+                        explanation: "The Emerald Eye turns out to be a giant pearl, not an emerald as they expected."
+                    },
+                    {
+                        question: "Who are Geronimo's traveling companions on the journey to find the treasure?",
+                        options: [
+                            "Thea",
+                            "Trap",
+                            "Benjamin",
+                            "Professor von Volt"
+                        ],
+                        correctAnswers: [0, 1, 2],
+                        explanation: "Geronimo travels with his sister Thea, his cousin Trap, and his nephew Benjamin."
+                    },
+                    {
+                        question: "What kind of boat do they use to reach the island?",
+                        options: [
+                            "A luxury cruise ship",
+                            "A small wooden rowboat",
+                            "A rusty old fishing boat called 'The Lucky Lady'",
+                            "A speedboat"
+                        ],
+                        correctAnswers: [2],
+                        explanation: "They travel on a rusty old fishing boat called 'The Lucky Lady,' which isn't very lucky at all."
+                    },
+                    {
+                        question: "What happens during their journey to the island?",
+                        options: [
+                            "They get lost",
+                            "They encounter a storm",
+                            "They run out of food",
+                            "The boat's engine fails"
+                        ],
+                        correctAnswers: [1],
+                        explanation: "During their journey, they encounter a terrible storm that nearly sinks their boat."
+                    },
+                    {
+                        question: "What animal nearly attacks Geronimo on the island?",
+                        options: [
+                            "A snake",
+                            "A spider",
+                            "A wild cat",
+                            "A shark"
+                        ],
+                        correctAnswers: [2],
+                        explanation: "Geronimo is nearly attacked by a wild cat while on the island."
+                    }
+                ]
+            },
+            {
+                id: 2,
+                title: "The Curse of the Cheese Pyramid",
+                description: "Geronimo travels to Egypt to interview Professor Spitfur about a mysterious cheese mummy.",
+                cheatcode: "CHEESEMUMMY",
+                quizData: [
+                    {
+                        question: "Why does Geronimo go to Egypt?",
+                        options: [
+                            "For a vacation",
+                            "To interview Professor Spitfur about a cheese mummy",
+                            "To solve a mystery",
+                            "To explore the pyramids"
+                        ],
+                        correctAnswers: [1],
+                        explanation: "Geronimo travels to Egypt to interview Professor Spitfur about his discovery of an ancient cheese mummy."
+                    },
+                    {
+                        question: "Who sends Geronimo to Egypt?",
+                        options: [
+                            "Trap Stilton",
+                            "Thea Stilton",
+                            "Sally Ratmousen",
+                            "The Rodent's Gazette's owner"
+                        ],
+                        correctAnswers: [3],
+                        explanation: "The owner of The Rodent's Gazette sends Geronimo to Egypt."
+                    },
+                    {
+                        question: "What is the name of the guide who helps Geronimo in Egypt?",
+                        options: [
+                            "Professor Spitfur",
+                            "Benjamin Stilton",
+                            "Ahmed",
+                            "Mahmoud Cheops"
+                        ],
+                        correctAnswers: [2],
+                        explanation: "Ahmed serves as Geronimo's guide during his time in Egypt."
+                    },
+                    {
+                        question: "What strange things happen to Geronimo in Egypt?",
+                        options: [
+                            "His luggage goes missing",
+                            "He has nightmares about mummies",
+                            "He keeps getting lost",
+                            "All of the above"
+                        ],
+                        correctAnswers: [3],
+                        explanation: "Geronimo experiences all of these misfortunes during his Egyptian adventure."
+                    },
+                    {
+                        question: "What is the 'curse' that the title refers to?",
+                        options: [
+                            "An ancient Egyptian curse on tomb robbers",
+                            "A series of accidents that happen to Geronimo",
+                            "A disease that affects mice who eat old cheese",
+                            "A legend about the pharaoh's revenge"
+                        ],
+                        correctAnswers: [1],
+                        explanation: "The 'curse' refers to the series of mishaps and accidents that happen to Geronimo during his trip."
+                    },
+                    {
+                        question: "What is discovered inside the cheese pyramid?",
+                        options: [
+                            "Gold and jewels",
+                            "An ancient mummified mouse",
+                            "Ancient cheese preserved for thousands of years",
+                            "Nothing - it was a hoax"
+                        ],
+                        correctAnswers: [2],
+                        explanation: "Inside the pyramid, they discover ancient preserved cheese from thousands of years ago."
+                    },
+                    {
+                        question: "What food does Geronimo dislike in Egypt?",
+                        options: [
+                            "Roasted beetles",
+                            "Fried scarab",
+                            "Pickled lizard tails",
+                            "All of the above"
+                        ],
+                        correctAnswers: [3],
+                        explanation: "Geronimo dislikes all of these exotic Egyptian foods he's offered during his trip."
+                    },
+                    {
+                        question: "What happens to the cheese mummy by the end of the book?",
+                        options: [
+                            "It's displayed in a museum",
+                            "It crumbles to dust",
+                            "It's stolen by treasure hunters",
+                            "Trap tries to eat it"
+                        ],
+                        correctAnswers: [0],
+                        explanation: "The cheese mummy is placed in a museum for display by the end of the story."
+                    },
+                    {
+                        question: "What does Geronimo learn about the ancient Egyptians?",
+                        options: [
+                            "They loved cheese",
+                            "They had advanced preservation techniques",
+                            "They worshipped cats",
+                            "All of the above"
+                        ],
+                        correctAnswers: [3],
+                        explanation: "Geronimo learns that ancient Egyptians loved cheese, had amazing preservation techniques, and worshipped cats."
+                    },
+                    {
+                        question: "What important lesson does Geronimo learn during his Egyptian adventure?",
+                        options: [
+                            "Never trust archaeologists",
+                            "Always bring your own food when traveling",
+                            "Face your fears and you might discover something amazing",
+                            "Egypt is too hot for mice"
+                        ],
+                        correctAnswers: [2],
+                        explanation: "Throughout the adventure, Geronimo learns to face his fears and discovers that doing so can lead to amazing discoveries."
+                    }
+                ]
+            },
+            {
+    id: 3,
+    title: "Cat and Mouse in a Haunted House",
+    description: "Geronimo gets lost in a forest during a storm and takes shelter in a seemingly abandoned house with a spooky secret.",
+    cheatcode: "HAUNTEDMANSION",
+    quizData: [
+        {
+            question: "How does Geronimo end up at the haunted house?",
+            options: [
+                "He gets invited to a party there",
+                "He gets lost driving in a thunderstorm",
+                "He goes there to interview the owner",
+                "Trap tricks him into going there"
+            ],
+            correctAnswers: [1],
+            explanation: "Geronimo gets lost while driving through Shadow Woods during a terrible thunderstorm and his car breaks down."
+        },
+        {
+            question: "What is the name of the haunted house?",
+            options: [
+                "Squeakspeare Manor",
+                "Shadow Manor",
+                "Cacklefur Castle",
+                "Rat's End House"
+            ],
+            correctAnswers: [2],
+            explanation: "The spooky mansion is called Cacklefur Castle, home to the Cacklefur family."
+        },
+        {
+            question: "What strange things happen to Geronimo in the house?",
+            options: [
+                "He hears moaning and chains rattling",
+                "Objects move on their own",
+                "Lights turn on and off mysteriously",
+                "All of the above"
+            ],
+            correctAnswers: [3],
+            explanation: "Geronimo experiences all of these spooky occurrences during his night at Cacklefur Castle."
+        },
+        {
+            question: "Who does Geronimo first meet in the haunted house?",
+            options: [
+                "A ghost",
+                "Creepella Cacklefur",
+                "An old butler",
+                "A black cat"
+            ],
+            correctAnswers: [3],
+            explanation: "The first creature Geronimo encounters in the house is a mysterious black cat."
+        },
+        {
+            question: "What is the real explanation for the 'ghost' in the house?",
+            options: [
+                "It's really Trap playing a prank",
+                "It's a cat burglar trying to scare people away",
+                "It's one of the Cacklefur family members",
+                "There is a real ghost in the house"
+            ],
+            correctAnswers: [1],
+            explanation: "The 'ghost' turns out to be a cat burglar using ghost stories to scare people away while he searches for something valuable in the house."
+        },
+        {
+            question: "Who helps Geronimo solve the mystery?",
+            options: [
+                "Thea",
+                "Trap",
+                "Benjamin",
+                "The Cacklefur family"
+            ],
+            correctAnswers: [0],
+            explanation: "Thea comes looking for Geronimo when he doesn't return home and helps him solve the mystery of the haunted house."
+        },
+        {
+            question: "What is the burglar looking for in the house?",
+            options: [
+                "Gold coins",
+                "A family heirloom",
+                "A secret recipe",
+                "A hidden map"
+            ],
+            correctAnswers: [2],
+            explanation: "The burglar is searching for the Cacklefur family's secret cheese recipe, which is very valuable."
+        },
+        {
+            question: "How does Geronimo catch the burglar?",
+            options: [
+                "Using a clever trap",
+                "The police help him",
+                "The burglar gets scared by a real ghost",
+                "With the help of the black cat"
+            ],
+            correctAnswers: [0],
+            explanation: "Geronimo and Thea set up a clever trap to catch the burglar in the act."
+        },
+        {
+            question: "What does Geronimo learn about fear in this adventure?",
+            options: [
+                "That fears are always justified",
+                "That most fears are based on imagination, not reality",
+                "That haunted houses should be avoided",
+                "That Thea is braver than him"
+            ],
+            correctAnswers: [1],
+            explanation: "Geronimo learns that many of our fears are created by our imagination and aren't based on reality."
+        },
+        {
+            question: "What happens to Cacklefur Castle at the end of the book?",
+            options: [
+                "It burns down",
+                "It's sold to a new owner",
+                "It's restored to its former glory",
+                "It's turned into a museum"
+            ],
+            correctAnswers: [2],
+            explanation: "After the mystery is solved, the Cacklefur family returns and begins restoring the castle to its former glory."
+        }
+    ]
+},
+            {
+    id: 4,
+    title: "I'm Too Fond of My Fur",
+    description: "Geronimo travels to the top of Mount Everest to interview the mouse who conquered it, but finds himself on a chilling adventure.",
+    cheatcode: "FREEZINGFUR",
+    quizData: [
+        {
+            question: "Where does Geronimo need to travel in this book?",
+            options: [
+                "The Amazon Rainforest",
+                "Mount Everest",
+                "The Arctic Circle",
+                "The Sahara Desert"
+            ],
+            correctAnswers: [1],
+            explanation: "Geronimo needs to travel to Mount Everest to interview the famous mountaineering mouse."
+        },
+        {
+            question: "Who is Professor von Volt in the story?",
+            options: [
+                "Geronimo's nephew",
+                "A famous explorer",
+                "A brilliant scientist and inventor",
+                "A rival newspaper editor"
+            ],
+            correctAnswers: [2],
+            explanation: "Professor von Volt is the brilliant scientist and inventor who helps Geronimo prepare for his journey."
+        },
+        {
+            question: "What special item does Professor von Volt give to Geronimo?",
+            options: [
+                "A heated jacket",
+                "Snow goggles",
+                "A special backpack",
+                "A satellite phone"
+            ],
+            correctAnswers: [0],
+            explanation: "The Professor gives Geronimo a special heated jacket to keep him warm in the extreme cold."
+        },
+        {
+            question: "What happens to Thea during the expedition?",
+            options: [
+                "She gets lost in a snowstorm",
+                "She falls into a crevasse",
+                "She twists her ankle",
+                "She gets altitude sickness"
+            ],
+            correctAnswers: [1],
+            explanation: "Thea falls into a crevasse during their trek up the mountain."
+        },
+        {
+            question: "What unexpected discovery does Geronimo make on Mount Everest?",
+            options: [
+                "A rare type of cheese",
+                "A hidden temple",
+                "Evidence of the Yeti",
+                "An abandoned research station"
+            ],
+            correctAnswers: [2],
+            explanation: "Geronimo discovers evidence of the Yeti (the Abominable Snowmouse) on Mount Everest."
+        },
+        {
+            question: "What embarrassing thing happens to Geronimo during his mountain climbing?",
+            options: [
+                "He falls into a pile of snow",
+                "His pants rip open",
+                "He screams like a little girl",
+                "He accidentally puts his climbing gear on backward"
+            ],
+            correctAnswers: [2],
+            explanation: "Geronimo screams like a little girl several times during the dangerous climb, embarrassing himself."
+        },
+        {
+            question: "How does Trap contribute to the expedition?",
+            options: [
+                "He cooks terrible meals for everyone",
+                "He carries the heaviest equipment",
+                "He takes photographs of the journey",
+                "He complains constantly"
+            ],
+            correctAnswers: [0, 3],
+            explanation: "Trap both cooks terrible meals and complains constantly throughout the expedition."
+        },
+        {
+            question: "What happens to their expedition guide?",
+            options: [
+                "He gets injured and must return to base camp",
+                "He reveals he's never climbed the mountain before",
+                "He abandons them during a storm",
+                "He turns out to be a yeti in disguise"
+            ],
+            correctAnswers: [0],
+            explanation: "Their guide gets injured and must return to base camp, leaving the Stiltons to continue alone."
+        },
+        {
+            question: "What ultimately happens with the Yeti evidence?",
+            options: [
+                "Geronimo loses it in an avalanche",
+                "Geronimo's photos come out blurry",
+                "They bring back proof but nobody believes them",
+                "It turns out to be an elaborate hoax"
+            ],
+            correctAnswers: [1],
+            explanation: "When Geronimo tries to photograph the evidence, the photos come out blurry and inconclusive."
+        },
+        {
+            question: "What does Geronimo learn by the end of this adventure?",
+            options: [
+                "Mountain climbing is too dangerous",
+                "The importance of preparation",
+                "How to overcome his fears",
+                "That family sticks together no matter what"
+            ],
+            correctAnswers: [2, 3],
+            explanation: "Geronimo learns both to overcome his fears and the importance of family sticking together during difficult times."
+        }
+    ]
+},
+{
+    id: 5,
+    title: "Four Mice Deep in the Jungle",
+    description: "Geronimo's grandfather sends him on an adventure to the Amazon jungle for a special report.",
+    cheatcode: "JUNGLERODENT",
+    quizData: [
+        {
+            question: "Who sends Geronimo to the Amazon jungle?",
+            options: [
+                "Thea Stilton",
+                "William Shortpaws (Grandfather)",
+                "Professor von Volt",
+                "The Rodent's Gazette readers"
+            ],
+            correctAnswers: [1],
+            explanation: "Geronimo's grandfather, William Shortpaws, sends him to the Amazon for a special report."
+        },
+        {
+            question: "What is Geronimo afraid of at the beginning of the story?",
+            options: [
+                "Spiders",
+                "Water",
+                "Heights",
+                "All of the above"
+            ],
+            correctAnswers: [3],
+            explanation: "Geronimo is afraid of spiders, water, heights, and many other things."
+        },
+        {
+            question: "What is the special 'Stilton Method' mentioned in the book?",
+            options: [
+                "A cheese-making technique",
+                "A way to navigate in the jungle",
+                "A series of exercises to overcome fears",
+                "A method of writing newspaper articles"
+            ],
+            correctAnswers: [2],
+            explanation: "The 'Stilton Method' is a series of exercises designed to help overcome fears."
+        },
+        {
+            question: "What dangerous creatures do they encounter in the jungle?",
+            options: [
+                "Panthers",
+                "Piranhas",
+                "Anacondas",
+                "All of the above"
+            ],
+            correctAnswers: [3],
+            explanation: "They encounter panthers, piranhas, anacondas, and other dangerous creatures during their jungle adventure."
+        },
+        {
+            question: "Who gets separated from the group in the jungle?",
+            options: [
+                "Geronimo",
+                "Thea",
+                "Benjamin",
+                "Trap"
+            ],
+            correctAnswers: [0],
+            explanation: "Geronimo gets separated from the rest of the group during a storm in the jungle."
+        },
+        {
+            question: "How does Geronimo deal with an anaconda encounter?",
+            options: [
+                "He runs away screaming",
+                "He freezes in terror until someone helps him",
+                "He faces his fear and handles the situation",
+                "He tries to take a photo of it"
+            ],
+            correctAnswers: [2],
+            explanation: "Geronimo faces his fear and successfully handles the anaconda encounter, showing his growth."
+        },
+        {
+            question: "What special animal does Benjamin want to study in the jungle?",
+            options: [
+                "Toucans",
+                "Poison dart frogs",
+                "Butterflies",
+                "Monkeys"
+            ],
+            correctAnswers: [2],
+            explanation: "Benjamin is particularly interested in studying the butterflies of the Amazon jungle."
+        },
+        {
+            question: "What unexpected friend helps Geronimo when he's lost?",
+            options: [
+                "A native guide",
+                "A parrot",
+                "A monkey",
+                "A jaguar cub"
+            ],
+            correctAnswers: [2],
+            explanation: "A friendly monkey helps guide Geronimo when he's lost in the jungle."
+        },
+        {
+            question: "What happens to Trap's cooking supplies in the jungle?",
+            options: [
+                "They get stolen by monkeys",
+                "They fall into the river",
+                "They're used as bait for fishing",
+                "They spoil in the heat"
+            ],
+            correctAnswers: [0],
+            explanation: "Trap's cooking supplies get stolen by mischievous monkeys, much to his dismay."
+        },
+        {
+            question: "What does Geronimo accomplish by the end of the adventure?",
+            options: [
+                "He overcomes most of his fears",
+                "He discovers a new species",
+                "He writes an award-winning article",
+                "He decides to move to the jungle permanently"
+            ],
+            correctAnswers: [0, 2],
+            explanation: "By the end, Geronimo has overcome most of his fears and written an award-winning article about his adventure."
+        }
+    ]
+},
+    {
+        id: 6,
+        title: "Paws Off, Cheddarface!",
+        description: "A look-alike mouse impersonates Geronimo to ruin his reputation. Can he unmask the imposter?",
+        cheatcode: "DOUBLESTILTON",
+        quizData: [
+            {
+                question: "Who is impersonating Geronimo?",
+                options: [
+                    "Sally Ratmousen",
+                    "Trap Stilton",
+                    "A robot mouse",
+                    "An actor hired by Sally Ratmousen"
+                ],
+                correctAnswers: [3],
+                explanation: "Sally Ratmousen hires an actor who looks exactly like Geronimo to impersonate him and ruin his reputation."
+            },
+            {
+                question: "What outrageous behavior does the imposter engage in?",
+                options: [
+                    "Dancing on tables at restaurants",
+                    "Wearing outlandish clothes",
+                    "Saying rude things to other mice",
+                    "All of the above"
+                ],
+                correctAnswers: [3],
+                explanation: "The impostor behaves outrageously in public, doing all of these things to damage Geronimo's reputation."
+            },
+            {
+                question: "How does Geronimo first discover he has a double?",
+                options: [
+                    "He sees his double in person",
+                    "People start mentioning strange behavior he doesn't remember",
+                    "He sees himself in the newspaper doing things he didn't do",
+                    "Trap tells him about the impostor"
+                ],
+                correctAnswers: [2],
+                explanation: "Geronimo first learns about his double when he sees photos of 'himself' in the newspaper doing things he never did."
+            },
+            {
+                question: "Who helps Geronimo uncover the truth?",
+                options: [
+                    "Thea Stilton",
+                    "Benjamin Stilton",
+                    "Hercule Poirat",
+                    "All of the above"
+                ],
+                correctAnswers: [3],
+                explanation: "Thea, Benjamin, and detective Hercule Poirat all help Geronimo investigate and uncover the truth about his impostor."
+            },
+            {
+                question: "What is happening to the sales of The Rodent's Gazette during this time?",
+                options: [
+                    "They are increasing",
+                    "They are decreasing rapidly",
+                    "They remain the same",
+                    "The newspaper temporarily stops publishing"
+                ],
+                correctAnswers: [1],
+                explanation: "Sales of The Rodent's Gazette are dropping rapidly as readers lose respect for its supposedly misbehaving editor."
+            },
+            {
+                question: "How does the impostor spell 'cheese'?",
+                options: [
+                    "Cheez",
+                    "Chez",
+                    "Chese",
+                    "He spells it correctly"
+                ],
+                correctAnswers: [0],
+                explanation: "The impostor spells 'cheese' as 'cheez', which becomes an important clue to distinguish him from the real Geronimo."
+            },
+            {
+                question: "What trap do Geronimo and his friends set to catch the impostor?",
+                options: [
+                    "They invite him to a fake awards ceremony",
+                    "They challenge him to a cheese-tasting contest",
+                    "They announce a special newspaper edition",
+                    "They follow him home"
+                ],
+                correctAnswers: [0],
+                explanation: "They set up a fake cheese awards ceremony to lure both the impostor and Sally Ratmousen into revealing themselves."
+            },
+            {
+                question: "What happens to Sally Ratmousen at the end of the book?",
+                options: [
+                    "She goes to jail",
+                    "She apologizes publicly",
+                    "She loses her job",
+                    "She escapes punishment but her plan is foiled"
+                ],
+                correctAnswers: [3],
+                explanation: "Although Sally's plan is exposed and foiled, she manages to avoid formal punishment but is embarrassed publicly."
+            },
+            {
+                question: "What does Geronimo learn about his reputation?",
+                options: [
+                    "That it's not important what others think",
+                    "That it takes years to build but can be ruined quickly",
+                    "That his true friends always believed in him",
+                    "Both B and C"
+                ],
+                correctAnswers: [3],
+                explanation: "Geronimo learns that reputation is fragile and takes time to build, but also that his true friends never doubted him."
+            },
+            {
+                question: "What eventually convinces the public that Geronimo was impersonated?",
+                options: [
+                    "The impostor confesses",
+                    "Security camera footage",
+                    "A public confrontation where both Geronimos appear together",
+                    "A newspaper article exposing the truth"
+                ],
+                correctAnswers: [2],
+                explanation: "The public finally believes Geronimo when they see both him and his impostor in the same place at the same time."
+            }
+        ]
+    },
+    {
+        id: 7,
+        title: "Red Pizzas for a Blue Count",
+        description: "Geronimo travels to Transylvania to interview the mysterious Count von Squeakervest about his red pizza recipe.",
+        cheatcode: "TRANSYLVANIA",
+        quizData: [
+            {
+                question: "Why does Geronimo go to Transylvania?",
+                options: [
+                    "For a vacation",
+                    "To investigate vampire rumors",
+                    "To interview Count von Squeakervest about his red pizza recipe",
+                    "To visit his cousin Trap"
+                ],
+                correctAnswers: [2],
+                explanation: "Geronimo travels to Transylvania to interview Count von Squeakervest and learn about his famous red pizza recipe."
+            },
+            {
+                question: "Who accompanies Geronimo on this trip?",
+                options: [
+                    "Only Thea",
+                    "Only Trap",
+                    "Thea and Benjamin",
+                    "Thea, Trap, and Benjamin"
+                ],
+                correctAnswers: [3],
+                explanation: "Geronimo is accompanied by his sister Thea, his cousin Trap, and his nephew Benjamin on this spooky adventure."
+            },
+            {
+                question: "What is Count von Squeakervest's castle called?",
+                options: [
+                    "Castle Squeaken",
+                    "Ratswing Castle",
+                    "Castle Dracula",
+                    "Squeakerly Manor"
+                ],
+                correctAnswers: [0],
+                explanation: "The Count lives in the mysterious and eerie Castle Squeaken, high in the Transylvanian mountains."
+            },
+            {
+                question: "What strange things happen at the castle?",
+                options: [
+                    "Mysterious sounds at night",
+                    "Objects moving on their own",
+                    "Strange shadows and lights",
+                    "All of the above"
+                ],
+                correctAnswers: [3],
+                explanation: "All sorts of spooky occurrences happen at the castle, including strange sounds, moving objects, and mysterious lights and shadows."
+            },
+            {
+                question: "What is unusual about the Count's appearance?",
+                options: [
+                    "He has unusually large teeth",
+                    "He is extremely pale",
+                    "He wears a long cape",
+                    "All of the above"
+                ],
+                correctAnswers: [3],
+                explanation: "Count von Squeakervest has all the classic vampire characteristics: large teeth, pale skin, and a long flowing cape."
+            },
+            {
+                question: "What is the secret ingredient in the Count's red pizza?",
+                options: [
+                    "Blood",
+                    "Red peppers",
+                    "Tomatoes grown in a special soil",
+                    "A special red cheese"
+                ],
+                correctAnswers: [2],
+                explanation: "The secret to the Count's red pizza is special tomatoes grown in the unique volcanic soil of Transylvania."
+            },
+            {
+                question: "What does Trap do that embarrasses Geronimo during the visit?",
+                options: [
+                    "He eats too much pizza",
+                    "He accidentally breaks an antique",
+                    "He pretends to be a vampire to scare Benjamin",
+                    "He falls asleep during the Count's speech"
+                ],
+                correctAnswers: [2],
+                explanation: "Trap dresses up as a vampire to scare Benjamin, which embarrasses Geronimo in front of their host."
+            },
+            {
+                question: "What is revealed about the Count by the end of the book?",
+                options: [
+                    "He is a real vampire",
+                    "He is Geronimo's long-lost relative",
+                    "He is just an eccentric mouse who loves the vampire legend",
+                    "He is trying to sell his castle"
+                ],
+                correctAnswers: [2],
+                explanation: "It turns out that the Count is just an eccentric mouse who embraces the vampire legend to attract tourists to Transylvania."
+            },
+            {
+                question: "Why does the Count live in isolation?",
+                options: [
+                    "He is hiding from enemies",
+                    "He is sensitive to sunlight",
+                    "He enjoys privacy for his cooking experiments",
+                    "He is working on a top-secret government project"
+                ],
+                correctAnswers: [2],
+                explanation: "The Count isolates himself to have peace and privacy for developing his unique recipes and cooking experiments."
+            },
+            {
+                question: "What does Geronimo learn about making assumptions?",
+                options: [
+                    "That assumptions are usually correct",
+                    "That appearances can be deceiving",
+                    "That it's better to avoid strange situations",
+                    "That Transylvanian legends are true"
+                ],
+                correctAnswers: [1],
+                explanation: "Geronimo learns not to make assumptions based on appearances or rumors, as things are not always what they seem."
+            }
+        ]
+    },
+    {
+        id: 8,
+        title: "Attack of the Bandit Cats",
+        description: "Geronimo uncovers a plot by the Cat Gang to steal a priceless jewel and must stop them before it's too late.",
+        cheatcode: "BANDITCAT",
+        quizData: [
+            {
+                question: "What precious item is targeted by the Cat Gang?",
+                options: [
+                    "The Golden Wheel of Cheese",
+                    "The Mouse Mayor's crown",
+                    "The Golden Anchor",
+                    "The Diamond Mouse"
+                ],
+                correctAnswers: [2],
+                explanation: "The Cat Gang is plotting to steal the Golden Anchor, a precious artifact and symbol of New Mouse City."
+            },
+            {
+                question: "How does Geronimo first learn about the Cat Gang's plan?",
+                options: [
+                    "From a mysterious letter",
+                    "By overhearing the cats talking",
+                    "From police reports",
+                    "From an article in a rival newspaper"
+                ],
+                correctAnswers: [0],
+                explanation: "Geronimo receives a mysterious anonymous letter warning him about the Cat Gang's plot to steal the Golden Anchor."
+            },
+            {
+                question: "Who is the leader of the Bandit Cats?",
+                options: [
+                    "Catardone",
+                    "Sally Ratmousen",
+                    "Captain Blackfur",
+                    "Whiskers"
+                ],
+                correctAnswers: [0],
+                explanation: "Catardone is the cunning and ruthless leader of the Bandit Cats who masterminds the heist."
+            },
+            {
+                question: "Where is the Golden Anchor kept?",
+                options: [
+                    "In the Mayor's house",
+                    "In the New Mouse City Museum",
+                    "On a ship in the harbor",
+                    "In a bank vault"
+                ],
+                correctAnswers: [1],
+                explanation: "The Golden Anchor is a treasured exhibit in the New Mouse City Museum."
+            },
+            {
+                question: "What disguise does Geronimo use during his investigation?",
+                options: [
+                    "A security guard",
+                    "A janitor",
+                    "A tourist",
+                    "A museum curator"
+                ],
+                correctAnswers: [1],
+                explanation: "Geronimo disguises himself as a janitor to investigate the museum without attracting attention."
+            },
+            {
+                question: "What special gadget does Professor von Volt provide to help Geronimo?",
+                options: [
+                    "Invisible ink",
+                    "A tracking device",
+                    "Night vision goggles",
+                    "A camera pen"
+                ],
+                correctAnswers: [2],
+                explanation: "Professor von Volt gives Geronimo special night vision goggles to help him spot the cats in the dark."
+            },
+            {
+                question: "How do the Bandit Cats plan to enter the museum?",
+                options: [
+                    "Through the front door disguised as tourists",
+                    "Through the air conditioning ducts",
+                    "By tunneling from the sewers",
+                    "By breaking through a skylight"
+                ],
+                correctAnswers: [2],
+                explanation: "The Bandit Cats plan to access the museum by digging a tunnel from the sewer system beneath the city."
+            },
+            {
+                question: "Who unexpectedly helps Geronimo during the final confrontation?",
+                options: [
+                    "Sally Ratmousen",
+                    "The museum security",
+                    "Policeman Shortpaws",
+                    "The Mayor of New Mouse City"
+                ],
+                correctAnswers: [2],
+                explanation: "Policeman Shortpaws arrives at a critical moment to help Geronimo apprehend the Cat Gang."
+            },
+            {
+                question: "What happens to the Cat Gang at the end of the book?",
+                options: [
+                    "They escape with the treasure",
+                    "They are arrested",
+                    "They make a deal with Geronimo",
+                    "They give up and leave the city"
+                ],
+                correctAnswers: [1],
+                explanation: "The Bandit Cats are arrested and sent to prison for their attempted heist of the Golden Anchor."
+            },
+            {
+                question: "How is Geronimo rewarded for saving the Golden Anchor?",
+                options: [
+                    "With money",
+                    "With a medal from the Mayor",
+                    "With exclusive rights to the story",
+                    "With a promotion"
+                ],
+                correctAnswers: [1],
+                explanation: "Geronimo receives a special medal from the Mayor for his bravery in protecting the city's treasure."
+            }
+        ]
+    },
+    {
+        id: 9,
+        title: "A Fabumouse Vacation for Geronimo",
+        description: "Geronimo's relaxing island vacation turns into another wild adventure when his hotel room is ransacked.",
+        cheatcode: "VACATIONTIME",
+        quizData: [
+            {
+                question: "Why does Geronimo go on vacation?",
+                options: [
+                    "His doctor orders him to rest",
+                    "Thea forces him to take a break",
+                    "The newspaper office is being renovated",
+                    "He wins a free trip"
+                ],
+                correctAnswers: [0],
+                explanation: "Geronimo's doctor orders him to take a vacation because he's been working too hard and is stressed."
+            },
+            {
+                question: "Where does Geronimo go for his vacation?",
+                options: [
+                    "Cat's Eye Island",
+                    "Paradise Island",
+                    "Whale Bay",
+                    "Mouse Lagoon"
+                ],
+                correctAnswers: [1],
+                explanation: "Geronimo travels to Paradise Island for what he hopes will be a peaceful, relaxing vacation."
+            },
+            {
+                question: "What problem occurs on Geronimo's first day of vacation?",
+                options: [
+                    "He loses his luggage",
+                    "His hotel room is ransacked",
+                    "He gets a sunburn",
+                    "He gets food poisoning"
+                ],
+                correctAnswers: [1],
+                explanation: "Geronimo returns to his hotel room to find it has been ransacked and someone has searched through his belongings."
+            },
+            {
+                question: "What does Geronimo find in his suitcase that might be the reason for the break-in?",
+                options: [
+                    "A rare old book",
+                    "A valuable piece of cheese",
+                    "A mysterious map",
+                    "A diamond"
+                ],
+                correctAnswers: [2],
+                explanation: "Geronimo discovers a mysterious old map in his suitcase that he didn't pack, which appears to be what the intruder was looking for."
+            },
+            {
+                question: "Who joins Geronimo on his vacation unexpectedly?",
+                options: [
+                    "Only Thea",
+                    "Only Trap",
+                    "Thea and Benjamin",
+                    "Trap, Thea, and Benjamin"
+                ],
+                correctAnswers: [3],
+                explanation: "Trap, Thea, and Benjamin all show up on Paradise Island, surprising Geronimo with their unexpected arrival."
+            },
+            {
+                question: "What does the mysterious map lead to?",
+                options: [
+                    "A pirate's treasure",
+                    "An ancient temple",
+                    "A rare species of cheese plant",
+                    "A secret underwater cave"
+                ],
+                correctAnswers: [0],
+                explanation: "The map leads to a pirate's treasure hidden somewhere on Paradise Island centuries ago."
+            },
+            {
+                question: "What dangerous creature do they encounter while following the map?",
+                options: [
+                    "A shark",
+                    "A giant crab",
+                    "A venomous snake",
+                    "A wild boar"
+                ],
+                correctAnswers: [2],
+                explanation: "While searching for the treasure, the group encounters a dangerous venomous snake that nearly bites Geronimo."
+            },
+            {
+                question: "Who else is searching for the treasure?",
+                options: [
+                    "Other tourists",
+                    "The hotel staff",
+                    "A band of modern-day pirates",
+                    "An archaeology professor"
+                ],
+                correctAnswers: [2],
+                explanation: "A group of modern-day pirates are also hunting for the treasure and are responsible for ransacking Geronimo's room."
+            },
+            {
+                question: "Where is the treasure ultimately found?",
+                options: [
+                    "Buried on the beach",
+                    "In a cave behind a waterfall",
+                    "At the bottom of a lagoon",
+                    "Inside a hollow tree"
+                ],
+                correctAnswers: [1],
+                explanation: "The pirate treasure is discovered hidden in a secret cave behind a beautiful waterfall on the island."
+            },
+            {
+                question: "What does Geronimo decide to do with the treasure?",
+                options: [
+                    "Keep it all for himself",
+                    "Split it with his family",
+                    "Donate it to the island's museum",
+                    "Return it to the ocean"
+                ],
+                correctAnswers: [2],
+                explanation: "Geronimo decides to donate the treasure to the island's museum so everyone can appreciate its historical value."
+            }
+        ]
+    },
+    {
+        id: 10,
+        title: "All Because of a Cup of Coffee",
+        description: "A chance meeting at a coffee shop leads Geronimo on a journey to help a princess save her tiny kingdom.",
+        cheatcode: "COFFEEBEAN",
+        quizData: [
+            {
+                question: "How does Geronimo meet Princess Petunia?",
+                options: [
+                    "At a royal ball",
+                    "She visits his newspaper office",
+                    "At the Blackrat Coffee Shop",
+                    "Through Thea, who knows her"
+                ],
+                correctAnswers: [2],
+                explanation: "Geronimo accidentally meets Princess Petunia at the Blackrat Coffee Shop when he spills coffee on her."
+            },
+            {
+                question: "What country is Princess Petunia from?",
+                options: [
+                    "Mousenhagen",
+                    "Mickyland",
+                    "The Kingdom of Purrsville",
+                    "The Kingdom of Mousikistan"
+                ],
+                correctAnswers: [3],
+                explanation: "Princess Petunia is from the tiny Kingdom of Mousikistan, which most mice have never heard of."
+            },
+            {
+                question: "What problem is Princess Petunia facing?",
+                options: [
+                    "Her kingdom has been invaded",
+                    "She's lost her crown",
+                    "Her kingdom's economy is collapsing because of coffee prices",
+                    "She's been exiled from her homeland"
+                ],
+                correctAnswers: [2],
+                explanation: "The Kingdom of Mousikistan's economy depends on coffee exports, and falling coffee prices are causing an economic crisis."
+            },
+            {
+                question: "How does Geronimo initially respond to Princess Petunia's request for help?",
+                options: [
+                    "He eagerly agrees right away",
+                    "He refuses but Thea changes his mind",
+                    "He hesitates and makes excuses",
+                    "He suggests she seek professional economic advisors"
+                ],
+                correctAnswers: [2],
+                explanation: "Geronimo initially makes excuses and tries to avoid getting involved in Princess Petunia's problems."
+            },
+            {
+                question: "Who convinces Geronimo to help the princess?",
+                options: [
+                    "Trap",
+                    "Thea",
+                    "Benjamin",
+                    "His grandfather"
+                ],
+                correctAnswers: [1],
+                explanation: "Thea convinces Geronimo that he should help Princess Petunia save her kingdom from economic collapse."
+            },
+            {
+                question: "What is special about Mousikistan's coffee?",
+                options: [
+                    "It has a unique flavor from special beans",
+                    "It has medicinal properties",
+                    "It stays fresh longer than other coffee",
+                    "It's the most expensive coffee in the world"
+                ],
+                correctAnswers: [0],
+                explanation: "Mousikistan's coffee has a unique, delicious flavor because it's made from special beans that only grow in that kingdom."
+            },
+            {
+                question: "What solution does Geronimo propose to save Mousikistan?",
+                options: [
+                    "A loan from the Mouse Island bank",
+                    "A marketing campaign highlighting the coffee's unique qualities",
+                    "Diversifying the kingdom's exports",
+                    "A merger with a neighboring kingdom"
+                ],
+                correctAnswers: [1],
+                explanation: "Geronimo suggests creating a marketing campaign to promote the unique qualities of Mousikistan coffee and increase demand."
+            },
+            {
+                question: "What challenge do they face in implementing Geronimo's plan?",
+                options: [
+                    "Opposition from rival coffee producers",
+                    "Lack of funding for the marketing campaign",
+                    "The princess's advisors reject the plan",
+                    "A coffee bean disease threatens the crop"
+                ],
+                correctAnswers: [0],
+                explanation: "Rival coffee producers try to sabotage Geronimo's plan because they don't want competition from Mousikistan coffee."
+            },
+            {
+                question: "How does Geronimo's newspaper help the situation?",
+                options: [
+                    "By raising money through a charity drive",
+                    "By publishing a special edition about Mousikistan coffee",
+                    "By organizing a coffee festival",
+                    "By running advertisements for free"
+                ],
+                correctAnswers: [1],
+                explanation: "The Rodent's Gazette publishes a special edition all about Mousikistan's unique coffee, generating interest throughout Mouse Island."
+            },
+            {
+                question: "What is the outcome of Geronimo's efforts?",
+                options: [
+                    "Mousikistan's coffee becomes world-famous and saves the economy",
+                    "The plan fails but the princess finds another solution",
+                    "Geronimo ends up buying the coffee plantation himself",
+                    "The princess decides to diversify the kingdom's economy instead"
+                ],
+                correctAnswers: [0],
+                explanation: "Thanks to Geronimo's marketing campaign, Mousikistan's special coffee becomes famous throughout the mouse world, saving the kingdom's economy."
+            }
+        ]
+    }
+        ];
+
+        // Global Variables
+        let currentLevelIndex = 0;
+        let timeLeft = 5 * 60; // 5 minutes in seconds
+        let timerInterval;
+        let userProgress = {
+            completedLevels: [],
+            unlockedLevels: [1]
+        };
+
+        // Load saved progress from localStorage if available
+        function loadUserProgress() {
+            try {
+                const savedProgress = localStorage.getItem('geronimo_quiz_progress');
+                if (savedProgress) {
+                    userProgress = JSON.parse(savedProgress);
+                }
+            } catch (error) {
+                console.log('Unable to access localStorage, using default progress');
+                // If localStorage is not available, use default progress
+                userProgress = {
+                    completedLevels: [],
+                    unlockedLevels: [1]
+                };
+            }
+            updateProgressUI();
+        }
+
+        // Save progress to localStorage
+        function saveUserProgress() {
+            try {
+                localStorage.setItem('geronimo_quiz_progress', JSON.stringify(userProgress));
+            } catch (error) {
+                console.log('Unable to save to localStorage');
+                // If we're in a sandboxed environment, just update the UI without saving
+            }
+            updateProgressUI();
+        }
+
+        // Update the progress UI elements
+        function updateProgressUI() {
+            // Update progress bar
+            const totalBooks = booksQuizData.length;
+            const completedBooks = userProgress.completedLevels.length;
+            const progressPercentage = (completedBooks / totalBooks) * 100;
+            
+            document.getElementById('progress-bar').style.width = `${progressPercentage}%`;
+            document.getElementById('progress-text').textContent = `${completedBooks}/${totalBooks} books completed`;
+            
+            // Update book selection cards
+            renderBookSelection();
+        }
+
+        // Generate book selection UI
+        function renderBookSelection() {
+            const bookSelectionContainer = document.getElementById('book-selection');
+            bookSelectionContainer.innerHTML = '';
+            
+            booksQuizData.forEach((book, index) => {
+                const isUnlocked = userProgress.unlockedLevels.includes(book.id);
+                const isCompleted = userProgress.completedLevels.includes(book.id);
+                
+                const bookCard = document.createElement('div');
+                bookCard.className = 'book-card';
+                
+                // Level indicator
+                const levelIndicator = document.createElement('div');
+                levelIndicator.className = 'level-indicator';
+                levelIndicator.textContent = book.id;
+                bookCard.appendChild(levelIndicator);
+                
+                // Book image/icon
+                const bookImage = document.createElement('div');
+                bookImage.className = 'book-image';
+                bookImage.innerHTML = '📚';
+                bookCard.appendChild(bookImage);
+                
+                // Book details
+                const bookDetails = document.createElement('div');
+                bookDetails.className = 'book-details';
+                
+                const bookTitle = document.createElement('div');
+                bookTitle.className = 'book-title';
+                bookTitle.textContent = book.title;
+                bookDetails.appendChild(bookTitle);
+                
+                const bookDescription = document.createElement('div');
+                bookDescription.className = 'book-description';
+                bookDescription.textContent = book.description;
+                bookDetails.appendChild(bookDescription);
+                
+                // Play button
+                const playButton = document.createElement('button');
+                playButton.className = isUnlocked ? 'btn' : 'btn locked-level-btn';
+                playButton.textContent = isCompleted ? 'Play Again' : 'Play';
+                
+                if (isUnlocked) {
+                    playButton.addEventListener('click', () => loadQuizLevel(index));
+                } else {
+                    // For locked levels, make it obvious they can click to enter cheatcode
+                    playButton.textContent = 'Unlock';
+                    playButton.addEventListener('click', () => {
+                        showCheatcodePrompt(book.id, book.title);
+                    });
+                }
+                
+                bookDetails.appendChild(playButton);
+                bookCard.appendChild(bookDetails);
+                
+                // Status badge
+                const statusBadge = document.createElement('div');
+                statusBadge.className = `book-status ${isUnlocked ? 'status-unlocked' : 'status-locked'}`;
+                statusBadge.textContent = isCompleted ? 'Completed' : (isUnlocked ? 'Unlocked' : 'Locked');
+                bookCard.appendChild(statusBadge);
+                
+                bookSelectionContainer.appendChild(bookCard);
+            });
+        }
+
+        // Load specific quiz level
+        function loadQuizLevel(levelIndex) {
+            currentLevelIndex = levelIndex;
+            
+            // Update header subtitle
+            document.getElementById('header-subtitle').textContent = `Quiz: ${booksQuizData[levelIndex].title}`;
+            
+            // Update instructions book title
+            document.getElementById('instructions-book-title').textContent = booksQuizData[levelIndex].title;
+            
+            // Hide home page, show instructions
+            document.getElementById('home-page').style.display = 'none';
+            document.getElementById('quiz-instructions').style.display = 'block';
+            document.getElementById('home-btn').style.display = 'block';
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        // Create quiz questions
+        function createQuiz() {
+            const currentQuizData = booksQuizData[currentLevelIndex].quizData;
+            const questionsContainer = document.getElementById('questions');
+            questionsContainer.innerHTML = '';
+            
+            currentQuizData.forEach((questionData, index) => {
+                const questionElement = document.createElement('div');
+                questionElement.className = 'question';
+                questionElement.id = `question-${index}`;
+                
+                // Question text
+                const questionText = document.createElement('h3');
+                questionText.textContent = `${index + 1}. ${questionData.question}`;
+                questionElement.appendChild(questionText);
+                
+                // Options
+                const optionsContainer = document.createElement('div');
+                optionsContainer.className = 'options';
+                
+                questionData.options.forEach((option, optionIndex) => {
+                    const optionElement = document.createElement('div');
+                    optionElement.className = 'option';
+                    
+                    const input = document.createElement('input');
+                    input.type = 'checkbox';
+                    input.id = `question-${index}-option-${optionIndex}`;
+                    input.name = `question-${index}`;
+                    input.value = optionIndex;
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = `question-${index}-option-${optionIndex}`;
+                    label.textContent = option;
+                    
+                    optionElement.appendChild(input);
+                    optionElement.appendChild(label);
+                    optionsContainer.appendChild(optionElement);
+                });
+                
+                questionElement.appendChild(optionsContainer);
+                
+                // Feedback container (initially hidden)
+                const feedbackContainer = document.createElement('div');
+                feedbackContainer.className = 'feedback';
+                feedbackContainer.id = `feedback-${index}`;
+                questionElement.appendChild(feedbackContainer);
+                
+                questionsContainer.appendChild(questionElement);
+            });
+        }
+
+        // Function to validate if all questions have been attempted
+        function validateAllQuestionsAttempted() {
+            const currentQuizData = booksQuizData[currentLevelIndex].quizData;
+            let allAttempted = true;
+            let unansweredQuestions = [];
+            
+            currentQuizData.forEach((_, index) => {
+                const questionElement = document.getElementById(`question-${index}`);
+                const checkboxes = questionElement.querySelectorAll('input[type="checkbox"]');
+                const anyChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
+                
+                if (!anyChecked) {
+                    allAttempted = false;
+                    unansweredQuestions.push(index + 1);
+                }
+            });
+            
+            if (!allAttempted) {
+                alert(`Please answer all questions before submitting.\nUnanswered questions: ${unansweredQuestions.join(', ')}`);
+                
+                // Highlight unanswered questions
+                unansweredQuestions.forEach(questionNum => {
+                    const questionElement = document.getElementById(`question-${questionNum - 1}`);
+                    questionElement.style.borderLeft = '5px solid #d9534f';
+                    
+                    // Scroll to the first unanswered question
+                    if (questionNum === unansweredQuestions[0]) {
+                        questionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                });
+            }
+            
+            return allAttempted;
+        }
+        
+        // Timer functionality
+        function startTimer() {
+            timeLeft = 5 * 60; // Reset to 5 minutes
+            updateTimerDisplay();
+            
+            timerInterval = setInterval(function() {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('timer-container').classList.add('timer-expired');
+                    autoSubmitQuiz();
+                }
+                
+                // Warning when 1 minute remains
+                if (timeLeft === 60) {
+                    alert("Only 1 minute remaining!");
+                }
+            }, 1000);
+        }
+        
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            
+            document.getElementById('timer').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+            // Add visual warning when time is running low
+            if (timeLeft <= 30) {
+                document.getElementById('timer-container').style.backgroundColor = 
+                    document.documentElement.classList.contains('dark-mode') ? '#8b0000' : '#d9534f';
+            }
+        }
+        
+        function autoSubmitQuiz() {
+            alert("Time's up! Your answers will be submitted automatically.");
+            checkAnswers(true); // Pass true to indicate this is an auto-submission
+        }
+        
+        // Function to check answers
+        function checkAnswers(isAutoSubmit = false) {
+            // Stop the timer when answers are submitted
+            clearInterval(timerInterval);
+            
+            // If manual submission, validate all questions have been attempted
+            if (!isAutoSubmit) {
+                if (!validateAllQuestionsAttempted()) {
+                    // Restart timer if validation fails
+                    startTimer();
+                    return;
+                }
+            }
+            
+            const currentQuizData = booksQuizData[currentLevelIndex].quizData;
+            let correctQuestions = 0;
+            let incorrectQuestions = 0;
+            let unattemptedQuestions = 0;
+            
+            currentQuizData.forEach((questionData, index) => {
+                const feedbackContainer = document.getElementById(`feedback-${index}`);
+                feedbackContainer.style.display = 'block';
+                
+                const selectedOptions = [];
+                let questionAttempted = false;
+                
+                questionData.options.forEach((_, optionIndex) => {
+                    const checkbox = document.getElementById(`question-${index}-option-${optionIndex}`);
+                    if (checkbox.checked) {
+                        selectedOptions.push(optionIndex);
+                        questionAttempted = true;
+                    }
+                });
+                
+                // Check if question was attempted
+                if (!questionAttempted) {
+                    unattemptedQuestions++;
+                    feedbackContainer.className = 'feedback unattempted';
+                    feedbackContainer.innerHTML = `<p><span class="unattempted">Not attempted.</span> Make sure to answer all questions!</p>`;
+                    return; // Skip the rest of this iteration
+                }
+                
+                // Check if answers match exactly
+                const correctOptions = questionData.correctAnswers;
+                
+                // For a question to be correct:
+                // 1. All correct options must be selected
+                // 2. No incorrect options can be selected
+                const allCorrectOptionsSelected = correctOptions.every(opt => selectedOptions.includes(opt));
+                const noIncorrectOptionsSelected = selectedOptions.every(opt => correctOptions.includes(opt));
+                
+                const isQuestionCorrect = allCorrectOptionsSelected && noIncorrectOptionsSelected;
+                
+                if (isQuestionCorrect) {
+                    correctQuestions++;
+                    feedbackContainer.className = 'feedback correct';
+                    feedbackContainer.innerHTML = `<p><span class="correct">Correct!</span> ${questionData.explanation}</p>`;
+                } else {
+                    incorrectQuestions++;
+                    feedbackContainer.className = 'feedback incorrect';
+                    feedbackContainer.innerHTML = `<p><span class="incorrect">Incorrect.</span> Try reading this part of the book again!</p>`;
+                }
+                
+                // Highlight options - but only mark correct ones if the user got them right
+                questionData.options.forEach((_, optionIndex) => {
+                    const label = document.querySelector(`label[for="question-${index}-option-${optionIndex}"]`);
+                    
+                    // Only show which options are correct if the user got the question right
+                    if (isQuestionCorrect) {
+                        const isOptionCorrect = correctOptions.includes(optionIndex);
+                        if (isOptionCorrect) {
+                            label.classList.add('correct');
+                        }
+                    }
+                    
+                    // Disable checkboxes
+                    const checkbox = document.getElementById(`question-${index}-option-${optionIndex}`);
+                    checkbox.disabled = true;
+                });
+            });
+            
+            // Calculate final score using the formula: 
+            // +1 for correct questions, -0.5 for incorrect questions, -0.25 for unattempted questions
+            const score = correctQuestions - (incorrectQuestions * 0.5) - (unattemptedQuestions * 0.25);
+            
+            const resultsContainer = document.getElementById('results');
+            const scoreDisplay = document.getElementById('score-display');
+            const feedbackMessage = document.getElementById('feedback-message');
+            const cheatcodeReveal = document.getElementById('cheatcode-reveal');
+            const nextLevelBtn = document.getElementById('next-level-btn');
+            
+            // Display results with score rounded to one decimal place
+            const roundedScore = Math.round(score * 10) / 10;
+            const maxPossibleScore = currentQuizData.length;
+            const scorePercentage = (roundedScore / maxPossibleScore) * 100;
+            const isPerfectScore = correctQuestions === maxPossibleScore;
+            
+            // Add details to score display
+            scoreDisplay.innerHTML = `
+                <div>Your Score: ${roundedScore} out of ${maxPossibleScore} (${Math.round(scorePercentage)}%)</div>
+                <div style="font-size: 0.9em; margin-top: 10px;">
+                    <div>Correct questions: +${correctQuestions}</div>
+                    <div>Incorrect questions: -${(incorrectQuestions * 0.5).toFixed(1)}</div>
+                    ${unattemptedQuestions > 0 ? `<div>Unattempted questions: -${(unattemptedQuestions * 0.25).toFixed(2)}</div>` : ''}
+                </div>
+            `;
+            
+            // Check if this is a perfect score and the next level should be unlocked
+            if (isPerfectScore) {
+                const currentBookId = booksQuizData[currentLevelIndex].id;
+                
+                // Add to completed levels if not already completed
+                if (!userProgress.completedLevels.includes(currentBookId)) {
+                    userProgress.completedLevels.push(currentBookId);
+                }
+                
+                // Check if there's a next level to unlock
+                if (currentLevelIndex < booksQuizData.length - 1) {
+                    const nextBookId = booksQuizData[currentLevelIndex + 1].id;
+                    
+                    // Unlock next level if not already unlocked
+                    if (!userProgress.unlockedLevels.includes(nextBookId)) {
+                        userProgress.unlockedLevels.push(nextBookId);
+                        
+                        // Show next level button
+                        nextLevelBtn.style.display = 'block';
+                        nextLevelBtn.textContent = `Next Book: ${booksQuizData[currentLevelIndex + 1].title}`;
+                    }
+                }
+                
+                // Show cheatcode
+                cheatcodeReveal.style.display = 'block';
+                cheatcodeReveal.innerHTML = `
+                    <div style="margin-bottom: 5px;">🔑 Cheatcode Unlocked! 🔑</div>
+                    <div>Remember this code to skip this level in the future:</div>
+                    <div style="font-size: 1.3em; margin-top: 5px;">${booksQuizData[currentLevelIndex].cheatcode}</div>
+                `;
+                
+                // Save progress
+                saveUserProgress();
+            } else {
+                // Hide cheatcode and next level button if not a perfect score
+                cheatcodeReveal.style.display = 'none';
+                nextLevelBtn.style.display = 'none';
+            }
+            
+            // Set feedback message based on score
+            if (isPerfectScore) {
+                feedbackMessage.textContent = "Fabumouse! You've mastered this book! The next adventure awaits! 🧀🐭";
+            } else if (scorePercentage >= 70) {
+                feedbackMessage.textContent = "Great job! But you need a perfect score to unlock the next book!";
+            } else if (scorePercentage >= 50) {
+                feedbackMessage.textContent = "Not bad, but you might want to reread some chapters!";
+            } else if (scorePercentage >= 0) {
+                feedbackMessage.textContent = "Holey cheese! Time to read the book again!";
+            } else {
+                feedbackMessage.textContent = "By my whiskers! You might be thinking of a different book! 🐭";
+            }
+            
+            resultsContainer.style.display = 'block';
+            document.getElementById('submit-btn').style.display = 'none';
+        }
+        
+        // Function to reset the quiz
+        function resetQuiz() {
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('submit-btn').style.display = 'none';
+            
+            // Hide all feedback
+            document.querySelectorAll('.feedback').forEach(element => {
+                element.style.display = 'none';
+            });
+            
+            // Reset all checkboxes and labels
+            document.querySelectorAll('input[type="checkbox"]:not(#checkbox)').forEach(checkbox => {
+                checkbox.checked = false;
+                checkbox.disabled = false;
+            });
+            
+            document.querySelectorAll('label').forEach(label => {
+                if (label.htmlFor !== 'checkbox') {
+                    label.classList.remove('correct', 'incorrect');
+                }
+            });
+            
+            // Remove highlighted borders from questions
+            document.querySelectorAll('.question').forEach(question => {
+                question.style.borderLeft = `5px solid var(--highlight-color)`;
+            });
+            
+            // Reset the timer
+            clearInterval(timerInterval);
+            timeLeft = 5 * 60; // Reset to 5 minutes
+            updateTimerDisplay();
+            document.getElementById('timer-container').style.backgroundColor = 
+                document.documentElement.classList.contains('dark-mode') ? 'var(--timer-bg)' : '#ff6b6b';
+            document.getElementById('timer-container').classList.remove('timer-expired');
+            
+            // Return to instructions view
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('quiz-instructions').style.display = 'block';
+            document.getElementById('start-btn').style.display = 'block';
+            
+            // Scroll back to top
+            window.scrollTo(0, 0);
+        }
+        
+        // Function to start the quiz
+        function startQuiz() {
+            document.getElementById('quiz-container').style.display = 'block';
+            document.getElementById('submit-btn').style.display = 'block';
+            document.getElementById('quiz-instructions').style.display = 'none';
+            document.getElementById('timer-container').style.display = 'block';
+            
+            createQuiz();
+            startTimer();
+            
+            // Scroll to the first question
+            document.getElementById('quiz-container').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Function to go to next level
+        function goToNextLevel() {
+            if (currentLevelIndex < booksQuizData.length - 1) {
+                loadQuizLevel(currentLevelIndex + 1);
+                
+                // Reset quiz state
+                document.getElementById('results').style.display = 'none';
+                document.getElementById('quiz-container').style.display = 'none';
+                
+                // Clear timer
+                clearInterval(timerInterval);
+                document.getElementById('timer-container').style.display = 'none';
+            }
+        }
+        
+        // Function to return to home page
+        function goToHomePage() {
+            // Reset quiz state
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('quiz-instructions').style.display = 'none';
+            
+            // Show home page
+            document.getElementById('home-page').style.display = 'flex';
+            document.getElementById('home-btn').style.display = 'none';
+            
+            // Reset header subtitle
+            document.getElementById('header-subtitle').textContent = 'Test your knowledge across the book series!';
+            
+            // Clear timer
+            clearInterval(timerInterval);
+            document.getElementById('timer-container').style.display = 'none';
+            
+            // Update progress UI
+            updateProgressUI();
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+        
+        // Function to show cheatcode prompt for a specific level
+        function showCheatcodePrompt(bookId, bookTitle) {
+            // Create modal overlay
+            const modalOverlay = document.createElement('div');
+            modalOverlay.style.position = 'fixed';
+            modalOverlay.style.top = '0';
+            modalOverlay.style.left = '0';
+            modalOverlay.style.width = '100%';
+            modalOverlay.style.height = '100%';
+            modalOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+            modalOverlay.style.display = 'flex';
+            modalOverlay.style.justifyContent = 'center';
+            modalOverlay.style.alignItems = 'center';
+            modalOverlay.style.zIndex = '2000';
+            
+            // Create modal content
+            const modalContent = document.createElement('div');
+            modalContent.style.backgroundColor = 'var(--container-bg)';
+            modalContent.style.color = 'var(--text-color)';
+            modalContent.style.borderRadius = '10px';
+            modalContent.style.padding = '20px';
+            modalContent.style.maxWidth = '90%';
+            modalContent.style.width = '400px';
+            modalContent.style.textAlign = 'center';
+            modalContent.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.5)';
+            modalContent.className = 'modal-content';
+            
+            // Modal header
+            const modalHeader = document.createElement('h3');
+            modalHeader.textContent = `Unlock "${bookTitle}"`;
+            modalHeader.style.marginTop = '0';
+            modalHeader.style.color = 'var(--highlight-color)';
+            
+            // Modal message
+            const modalMessage = document.createElement('p');
+            modalMessage.textContent = `This level is locked! You must either complete the previous level with a perfect score or enter the cheatcode to unlock it.`;
+            
+            // Cheatcode input
+            const inputContainer = document.createElement('div');
+            inputContainer.style.margin = '20px 0';
+            
+            const cheatcodeInput = document.createElement('input');
+            cheatcodeInput.type = 'text';
+            cheatcodeInput.placeholder = 'Enter cheatcode...';
+            cheatcodeInput.style.padding = '10px';
+            cheatcodeInput.style.width = '70%';
+            cheatcodeInput.style.borderRadius = '5px';
+            cheatcodeInput.style.border = '1px solid var(--book-border)';
+            cheatcodeInput.style.backgroundColor = 'var(--container-bg)';
+            cheatcodeInput.style.color = 'var(--text-color)';
+            cheatcodeInput.style.marginBottom = '10px';
+            
+            // Cheatcode submit button
+            const submitBtn = document.createElement('button');
+            submitBtn.textContent = 'Unlock';
+            submitBtn.className = 'btn';
+            submitBtn.style.margin = '10px auto';
+            submitBtn.style.padding = '8px 20px';
+            submitBtn.style.fontSize = '1em';
+            
+            // Close button
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = 'Cancel';
+            closeBtn.style.backgroundColor = '#6c757d';
+            closeBtn.style.color = 'white';
+            closeBtn.style.border = 'none';
+            closeBtn.style.borderRadius = '5px';
+            closeBtn.style.padding = '8px 20px';
+            closeBtn.style.margin = '10px 5px';
+            closeBtn.style.cursor = 'pointer';
+            closeBtn.style.fontSize = '1em';
+            
+            // Assemble the modal
+            inputContainer.appendChild(cheatcodeInput);
+            modalContent.appendChild(modalHeader);
+            modalContent.appendChild(modalMessage);
+            modalContent.appendChild(inputContainer);
+            modalContent.appendChild(submitBtn);
+            modalContent.appendChild(closeBtn);
+            modalOverlay.appendChild(modalContent);
+            document.body.appendChild(modalOverlay);
+            
+            // Focus the input
+            setTimeout(() => cheatcodeInput.focus(), 100);
+            
+            // Event listeners
+            closeBtn.addEventListener('click', () => {
+                document.body.removeChild(modalOverlay);
+            });
+            
+            submitBtn.addEventListener('click', () => {
+                checkCheatcode(cheatcodeInput.value.trim(), modalOverlay);
+            });
+            
+            cheatcodeInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') {
+                    checkCheatcode(cheatcodeInput.value.trim(), modalOverlay);
+                }
+            });
+            
+            // Allow clicking outside to close
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) {
+                    document.body.removeChild(modalOverlay);
+                }
+            });
+        }
+        
+        // Function to check entered cheatcode
+        function checkCheatcode(enteredCode = null, modalToClose = null) {
+            // Get the entered code
+            if (!enteredCode) {
+                return;
+            }
+            
+            enteredCode = enteredCode.toUpperCase();
+            
+            if (enteredCode) {
+                let matchedBook = null;
+                
+                // Check if the code matches any book
+                for (let i = 0; i < booksQuizData.length; i++) {
+                    if (booksQuizData[i].cheatcode === enteredCode) {
+                        matchedBook = booksQuizData[i];
+                        break;
+                    }
+                }
+                
+                if (matchedBook) {
+                    // Mark the level as completed
+                    if (!userProgress.completedLevels.includes(matchedBook.id)) {
+                        userProgress.completedLevels.push(matchedBook.id);
+                    }
+                    
+                    // Unlock next level if there is one
+                    const nextBookIndex = matchedBook.id;
+                    if (nextBookIndex < booksQuizData.length) {
+                        if (!userProgress.unlockedLevels.includes(nextBookIndex + 1)) {
+                            userProgress.unlockedLevels.push(nextBookIndex + 1);
+                        }
+                    }
+                    
+                    // Save progress
+                    saveUserProgress();
+                    
+                    // Show success message
+                    alert(`Cheatcode accepted! "${matchedBook.title}" completed!`);
+                    
+                    // Close modal if provided
+                    if (modalToClose && modalToClose.parentNode) {
+                        document.body.removeChild(modalToClose);
+                    }
+                    
+                    // Update book selection
+                    updateProgressUI();
+                } else {
+                    // Show error for invalid code
+                    alert('Invalid cheatcode. Please try again!');
+                }
+            }
+        }
+        
+        // Dark mode toggle functionality
+        function switchTheme(e) {
+            if (e.target.checked) {
+                document.documentElement.classList.add('dark-mode');
+                try {
+                    localStorage.setItem('theme', 'dark-mode');
+                } catch (error) {
+                    console.log('Unable to save theme to localStorage');
+                }
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+                try {
+                    localStorage.setItem('theme', '');
+                } catch (error) {
+                    console.log('Unable to save theme to localStorage');
+                }
+            }
+        }
+        
+        // Initialize the quiz
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load saved theme
+            try {
+                const currentTheme = localStorage.getItem('theme');
+                if (currentTheme) {
+                    document.documentElement.classList.add(currentTheme);
+                    document.querySelector('#checkbox').checked = (currentTheme === 'dark-mode');
+                }
+            } catch (error) {
+                console.log('Unable to access localStorage for theme');
+            }
+            
+            // Load saved progress
+            loadUserProgress();
+            
+            // Event listeners
+            document.querySelector('#checkbox').addEventListener('change', switchTheme);
+            document.getElementById('start-btn').addEventListener('click', startQuiz);
+            document.getElementById('submit-btn').addEventListener('click', () => checkAnswers(false));
+            document.getElementById('reset-btn').addEventListener('click', resetQuiz);
+            document.getElementById('next-level-btn').addEventListener('click', goToNextLevel);
+            document.getElementById('home-btn').addEventListener('click', goToHomePage);
+        });
+    </script>
+</body>
+</html>

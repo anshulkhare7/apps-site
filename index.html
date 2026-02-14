@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apps | Anshul Khare</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f0f0f;
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 4rem 1.5rem;
+    }
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #fff;
+    }
+    .subtitle {
+      color: #888;
+      margin-bottom: 3rem;
+      font-size: 0.95rem;
+    }
+    .apps {
+      display: grid;
+      gap: 1rem;
+      width: 100%;
+      max-width: 480px;
+    }
+    .app-card {
+      display: block;
+      padding: 1.25rem 1.5rem;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .app-card:hover {
+      border-color: #444;
+      background: #222;
+    }
+    .app-name {
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #fff;
+      margin-bottom: 0.3rem;
+    }
+    .app-desc {
+      font-size: 0.85rem;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <h1>Apps</h1>
+  <p class="subtitle">by Anshul Khare</p>
+  <div class="apps">
+    <a href="/geronimo/" class="app-card">
+      <div class="app-name">Geronimo Quiz</div>
+      <div class="app-desc">Test your knowledge of the Geronimo Stilton book series</div>
+    </a>
+  </div>
+</body>
+</html>
